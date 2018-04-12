@@ -1,18 +1,24 @@
 var EventEmitter = require('events').EventEmitter;
 var print = require('util').print;
 
-module.exports = function dockerStop(server) {
+module.exports = function dockerStop(server, isDebug = true) {
+
+  function debug() {
+    if (isDebug) {
+      print.apply(print, arguments)
+    }
+  }
 
   function shutdown() {
-    print('\n');
+    debug('\n');
     process.exit(0);
   }
 
   // Server can be anything that follows node's .close(), emit('close') paradigm.
   function onSignal(sig) {
-    print('\n' + sig, ' received, ');
+    debug('\n' + sig, ' received, ');
     if (server && typeof server.close === 'function') {
-      print('shutting down gracefully');
+      debug('shutting down gracefully');
       if (server instanceof EventEmitter) {
         server.once('close', shutdown);
         server.close();
@@ -20,7 +26,7 @@ module.exports = function dockerStop(server) {
         server.close(shutdown);
       }
     } else {
-      print('shutting down now!');
+      debug('shutting down now!');
       shutdown();
     }
   }
